@@ -1,0 +1,9 @@
+.idea/
+bin/
+obj/
+
+.DS_Store
+
+xcuserdata/
+project.xcworkspace/
+DerivedData/
