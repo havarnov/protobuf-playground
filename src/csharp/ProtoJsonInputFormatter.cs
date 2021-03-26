@@ -24,7 +24,8 @@ namespace protobuf_playground
             return typeof(IMessage).IsAssignableFrom(type);
         }
 
-        public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
+        public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context,
+            Encoding encoding)
         {
             var descriptor = context
                     .ModelType
@@ -37,6 +38,11 @@ namespace protobuf_playground
             using var reader = new StreamReader(httpContext.Request.Body, encoding);
             var json = await reader.ReadToEndAsync();
             var res = JsonParser.Default.Parse(json, descriptor);
+            if (!res.IsInitialized())
+            {
+                throw new ProtoJsonInputFormatterException($"Proto '{descriptor.Name}' was not initialized correctly.");
+            }
+
             return InputFormatterResult.Success(res);
         }
     }

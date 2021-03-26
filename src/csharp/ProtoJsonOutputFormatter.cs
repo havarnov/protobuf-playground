@@ -27,6 +27,11 @@ namespace protobuf_playground
             switch (context.Object)
             {
                 case IMessage msg:
+                    if (!msg.IsInitialized())
+                    {
+                        throw new ProtoJsonOutputFormatterException($"Proto '{msg.Descriptor.Name}' was not initialized correctly.");
+                    }
+
                     var json = JsonFormatter.Default.Format(msg);
                     await context.HttpContext.Response.WriteAsync(json, selectedEncoding);
                     break;

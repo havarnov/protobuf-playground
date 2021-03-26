@@ -1,3 +1,4 @@
+using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -17,7 +18,9 @@ namespace protobuf_playground
                     o.OutputFormatters.Add(new ProtoJsonOutputFormatter());
                     o.OutputFormatters.Add(new ProtoOutputFormatter());
                 })
-                .AddFluentValidation(o => o.RegisterValidatorsFromAssembly(typeof(Startup).Assembly));
+                .AddFluentValidation();
+
+            services.AddTransient<IValidator<Person>, PersonValidator>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -27,6 +30,22 @@ namespace protobuf_playground
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.Use(async (context, func) =>
+            {
+                try
+                {
+                    await func();
+                }
+                catch (ProtoJsonInputFormatterException e)
+                {
+                    context.Response.StatusCode = 400;
+                }
+                catch (ProtoJsonOutputFormatterException e)
+                {
+                    context.Response.StatusCode = 500;
+                }
+            });
 
             app.UseRouting();
 
